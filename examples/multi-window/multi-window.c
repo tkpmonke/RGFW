@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-
+#define RGFW_DEBUG
 #define RGFW_OPENGL
 #define GL_SILENCE_DEPRECATION
 #define RGFW_IMPLEMENTATION
@@ -19,20 +19,20 @@
 typedef DWORD (__stdcall * threadFunc_ptr) (LPVOID lpThreadParameter);
 typedef void* my_thread;
 
-my_thread createThread(threadFunc_ptr ptr, void* args) { return CreateThread(NULL, 0, ptr, args, 0, NULL); }
-void joinThread(my_thread thread) { WaitForSingleObject((HANDLE) thread, INFINITE); }
+static my_thread createThread(threadFunc_ptr ptr, void* args) { return CreateThread(NULL, 0, ptr, args, 0, NULL); }
+static void joinThread(my_thread thread) { WaitForSingleObject((HANDLE) thread, INFINITE); }
 #else
 #include <pthread.h>
 
 typedef pthread_t my_thread;
 typedef void* (* threadFunc_ptr)(void*);
 
-my_thread createThread(threadFunc_ptr ptr, void* args) {
+static my_thread createThread(threadFunc_ptr ptr, void* args) {
 	my_thread t;
 	pthread_create((pthread_t*) &t, NULL, *ptr, args);
 	return t;
 }
-void joinThread(my_thread thread) { pthread_join((pthread_t) thread, NULL); }
+static void joinThread(my_thread thread) { pthread_join((pthread_t) thread, NULL); }
 #endif
 
 void checkEvents(RGFW_window* win);
@@ -44,29 +44,30 @@ void checkEvents(RGFW_window* win) {
 				RGFW_window_setShouldClose(win, 1);
 				break;
 			case RGFW_windowResized:
-				if (event.mouse.x != 0 && event.mouse.y != 0)
-					printf("window %p: resize: %dx%d\n", (void*)win, event.mouse.x, event.mouse.y);
+				if (event.common.win->w != 0 && event.common.win->h)
+					printf("window %p: resize: %dx%d\n", (void*)win, event.common.win->w, event.common.win->h);
 				break;
-			case RGFW_drop:
+			case RGFW_dataDrop:
 				printf("window %p: drag and drop: %dx%d:\n", (void*)win, event.mouse.x, event.mouse.y);
 				for (size_t i = 0; i < event.drop.count; i++)
 					printf("\t%u: '%s'\n", (u32)i, event.drop.files[i]);
 				break;
+			case RGFW_keyPressed:
+				if (event.key.value == RGFW_c && (RGFW_window_isKeyDown(win, RGFW_controlL) || RGFW_window_isKeyDown(win, RGFW_controlR))) {
+					char str[32] = {0};
+					int size = snprintf(str, 32, "window %p: 刺猬", (void*)win);
+					if (size > 0)
+						RGFW_writeClipboard(str, (u32)size);
+				}
+				else if (event.key.value == RGFW_v && (RGFW_window_isKeyDown(win, RGFW_controlL) || RGFW_window_isKeyDown(win, RGFW_controlR))) {
+					size_t len = 0;
+					const char* str = RGFW_readClipboard(&len);
+					printf("window %p: clipboard paste %d: '", (void*)win, (i32)len);
+					fwrite(str, 1, len, stdout);
+					printf("'\n");
+				}
+				break;
 		}
-	}
-
-	if (RGFW_isPressed(win, RGFW_c) && (RGFW_isPressed(win, RGFW_controlL) || RGFW_isPressed(win, RGFW_controlR))) {
-		char str[32] = {0};
-		int size = snprintf(str, 32, "window %p: 刺猬", (void*)win);
-		if (size > 0)
-			RGFW_writeClipboard(str, (u32)size);
-	}
-	else if (RGFW_isPressed(win, RGFW_v) && (RGFW_isPressed(win, RGFW_controlL) || RGFW_isPressed(win, RGFW_controlR))) {
-		size_t len = 0;
-		const char* str = RGFW_readClipboard(&len);
-		printf("window %p: clipboard paste %d: '", (void*)win, (i32)len);
-		fwrite(str, 1, len, stdout);
-		printf("'\n");
 	}
 }
 
@@ -86,7 +87,7 @@ void* loop(void* _win) {
 
 	while (!RGFW_window_shouldClose(win)) {
 		checkEvents(win);
-		if (RGFW_isPressed(win, RGFW_space)) {
+		if (RGFW_window_isKeyDown(win, RGFW_space)) {
 			blue = (blue + 1) % 100;
 		}
 
@@ -123,10 +124,16 @@ int main(void) {
     RGFW_glHints* hints = RGFW_getGlobalHints_OpenGL();
 
 	RGFW_window* win1 = RGFW_createWindow("RGFW Example Window 1", 500, 500, 500, 500, RGFW_windowAllowDND | RGFW_windowOpenGL);
+
+	RGFW_window_makeCurrentContext_OpenGL(NULL); /* this is so we can share the context on wine for some reason */
+
 	hints->share = RGFW_window_getContext_OpenGL(win1);
 	RGFW_setGlobalHints_OpenGL(hints);
 
 	RGFW_window* win2 = RGFW_createWindow("RGFW Example Window 2", 100, 100, 200, 200, RGFW_windowNoResize | RGFW_windowAllowDND | RGFW_windowOpenGL);
+
+	RGFW_window_makeCurrentContext_OpenGL(NULL); /* this is so we can share the context on wine for some reason */
+
 	RGFW_window* win3 = RGFW_createWindow("RGFW Example Window 3", 20, 500, 400, 300, RGFW_windowNoResize | RGFW_windowAllowDND | RGFW_windowOpenGL);
 	printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
 	RGFW_window_makeCurrentContext_OpenGL(NULL); /* this is really important (this releases the opengl context on this thread) */

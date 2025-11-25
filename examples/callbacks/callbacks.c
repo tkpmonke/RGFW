@@ -1,12 +1,8 @@
 #define RGFW_IMPLEMENTATION
+#define RGFW_DEBUG
 #include "RGFW.h"
 
 #include <stdio.h>
-#ifdef RGFW_MACOS
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
 
 RGFW_window* window;
 
@@ -20,7 +16,7 @@ void errorfunc(RGFW_debugType type, RGFW_errorCode err, const char* msg) {
 static
 void scaleUpdatedfunc(RGFW_window* win, float scaleX, float scaleY) {
     if (window != win) return;
-    printf("scale updated %f %f\n", scaleX, scaleY);
+    printf("scale updated %f %f\n", (double)scaleX, (double)scaleY);
 }
 
 static
@@ -84,7 +80,7 @@ void mouseNotifyfunc(RGFW_window* win, i32 x, i32 y, u8 status) {
 static
 void mouseposfunc(RGFW_window* win, i32 x, i32 y, float vecX, float vecY) {
     RGFW_UNUSED(vecX); RGFW_UNUSED(vecY);
-    if (window != win || RGFW_isPressed(win, RGFW_controlL) == 0) return;
+    if (window != win || RGFW_window_isKeyPressed(win, RGFW_controlL) == 0) return;
    printf("mouse moved %i %i\n", x, y);
 }
 
@@ -119,19 +115,20 @@ void keyfunc(RGFW_window* win, RGFW_key key, u8 keyChar, RGFW_keymod keyMod, RGF
 }
 
 static
-void mousebuttonfunc(RGFW_window* win, u8 button, double scroll, u8 pressed) {
+void mousebuttonfunc(RGFW_window* win, u8 button, u8 pressed) {
     if (window != win) return;
 
-    if (button < RGFW_mouseScrollUp) {
-        if (pressed)
-            printf("mouse button pressed : %i\n", button);
-        else
-            printf("mouse button released : %i\n", button);
-    }
-    else
-        printf("mouse scrolled %f\n", scroll);
+	if (pressed)
+		printf("mouse button pressed : %i\n", button);
+	else
+		printf("mouse button released : %i\n", button);
 }
 
+static
+void scrollfunc(RGFW_window* win, float x, float y) {
+    if (window != win) return;
+	printf("mouse scrolled %f %f\n", (double)x, (double)y);
+}
 
 int main(void) {
     window = RGFW_createWindow("RGFW Callbacks", 500, 500, 500, 500, RGFW_windowCenter | RGFW_windowAllowDND);
@@ -146,11 +143,13 @@ int main(void) {
     RGFW_setWindowMaximizedCallback(windowmaximizefunc);
 	RGFW_setWindowQuitCallback(windowquitfunc);
 	RGFW_setMousePosCallback(mouseposfunc);
+
+	RGFW_setMouseScrollCallback(scrollfunc);
 	RGFW_setWindowRefreshCallback(windowrefreshfunc);
 	RGFW_setFocusCallback(focusfunc);
 	RGFW_setMouseNotifyCallback(mouseNotifyfunc);
-	RGFW_setDropCallback(dropfunc);
-	RGFW_setDragCallback(dragfunc);
+	RGFW_setDataDropCallback(dropfunc);
+	RGFW_setDataDragCallback(dragfunc);
 	RGFW_setKeyCallback(keyfunc);
 	RGFW_setMouseButtonCallback(mousebuttonfunc);
 

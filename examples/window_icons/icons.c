@@ -13,7 +13,7 @@ int main(void) {
     RGFW_window_setExitKey(win, RGFW_escape);
 
     unsigned char* icon = stbi_load("logo.png", &w, &h, &c, 3);
-    RGFW_window_setIconEx(win, base_icon, 3, 3, RGFW_formatRGB8, RGFW_iconWindow);
+    RGFW_window_setIconEx(win, base_icon, 3, 3, RGFW_formatRGBA8, RGFW_iconWindow);
     RGFW_window_setIconEx(win, icon, w, h, RGFW_formatRGB8, RGFW_iconTaskbar);
 
 

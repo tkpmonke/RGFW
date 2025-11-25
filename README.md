@@ -1,35 +1,40 @@
 # Riley's General Framework for Windowing
-![THE RGFW Logo](https://github.com/ColleagueRiley/RGFW/blob/main/logo.png?raw=true)
+<img align="left" style="width:300px" src="https://github.com/colleagueriley/rgfw/blob/main/logo.png?raw=true" width="300px">
 
-## Build statuses
+**RGFW** is a focused general windowing framework for creating and handling windows, graphics contexts and windowing inputs. The API is a mix between GLFW and SDL while maintaining a minminalistic and easy to modify implementation.
+
+---
+
+<br>
+
+[![Discord Members](https://img.shields.io/discord/829003376532258816.svg?label=Discord&logo=discord)](https://discord.gg/pXVNgVVbvh)
+
 ![workflow](https://github.com/ColleagueRiley/RGFW/actions/workflows/linux.yml/badge.svg)
 ![workflow windows](https://github.com/ColleagueRiley/RGFW/actions/workflows/windows.yml/badge.svg)
 ![workflow macOS](https://github.com/ColleagueRiley/RGFW/actions/workflows/macos.yml/badge.svg)
 
-[![Discord Members](https://img.shields.io/discord/829003376532258816.svg?label=Discord&logo=discord)](https://discord.gg/pXVNgVVbvh)
+# Features
 
-# About
-RGFW does
+* **is** an stb-style single headerfile and is very portable
+* **is** primarly written in C99 in mind
+* **has** a C89 compatible API on going changes to make the implementation more C89 friendly
+* **is** comparable to GLFW or aspects of SDL but it's leading motive is to be a flexible and lightweight windowing library
+* **is** a very small compared to other libraries
+* **is** a general framework and can be used for games, apps or tools
+* **does** only depend on system API libraries, Winapi, X11, Cocoa, etc **NO** dependencies
+* **does** help you create a window with a graphics context (OpenGL, Vulkan, WebGPU, Metal, or DirectX) and manage the window and its events only with a few function calls
+* **is** customizable, you enable or disable features
+* **does** work with X11 (UNIX), Wayland (*experimental*) (LINUX), Cocoa (MacOS), Emscripten (WASM) and WinAPI (tested on windows *XP*, 10, 11, reactOS and has limited 9x support)
+* **is** multi-paradigm, with a flexible event system, including multiple ways of handling events (callbacks, queue, state lookups)
+* **does** include a large number of examples for learning RGFW
 
-* is an stb-style single headerfile and is very portable (written in C99 in mind)
-* has a C89 compatible API on going changes to make the implementation more C89 friendly
-* is comparable to GLFW or aspects of SDL but it's leading motive is to be a flexible and lightweight windowing library
-* is very small compared to other libraries
-* is a general framework and can be used for games, apps or tools
-* only depends on system API libraries, Winapi, X11, Cocoa, etc **NO** dependencies
-* help you create a window with a graphics context (OpenGL, Vulkan, WebGPU, Metal, or DirectX) and manage the window and its events only with a few function calls
-* is customizable, you enable or disable features
-* works with X11 (UNIX), Wayland (*experimental*) (LINUX), Cocoa (MacOS), Emscripten (WASM) and WinAPI (tested on windows *XP*, 10, 11, reactOS and has limited 9x support)
-* is RGFW is multi-paradigm, with a flexible event system, including multiple ways of handling events (callbacks, queue, state lookups)
-* includes a large number of examples for learning RGFW
+* does **not** handle any rendering for you (other than creating your graphics context)
+* is **not** an OpenGL focused library, RGFW can be used with ANY graphics API
+* does **not** do anything above the bare minimum in terms of functionality
 
-RGFW does not
 
-* Handle any rendering for you (other than creating your graphics context)
-* an OpenGL focused library, RGFW can be used with ANY graphics API
-* do anything above the bare minimum in terms of functionality
 
-There is a Makefile including for compiling th examples. NOTE: `WAYLAND=1` OR  can be defined to compile for wayland. `WAYLAND_X11=1` can be used instead if you want examples to fallback to X11 if a Wayland display is not found. This adds `#define RGFW_WAYLAND` in the implementation (or defines `RGFW_WAYLAND` AND `RGFW_X11`)
+There is a Makefile including for compiling the examples. NOTE: `WAYLAND=1` OR  can be defined to compile for wayland. `WAYLAND_X11=1` can be used instead if you want examples to fallback to X11 if a Wayland display is not found. This adds `#define RGFW_WAYLAND` in the implementation (or defines `RGFW_WAYLAND` AND `RGFW_X11`)
 
 Included in the framework are helper functions for multiple rendering APIs OpenGL (Native, EGL, GLES), Vulkan, DirectX, [Metal](https://github.com/ColleagueRiley/RGFW/blob/main/examples/metal/metal.m) and WebGPU, you can also easily blit raw data directly onto the window with the `RGFW_surface` object using `RGFW_window_blitSurface`.
 
@@ -65,17 +70,20 @@ int main() {
 
     while (RGFW_window_shouldClose(win) == RGFW_FALSE) {
         RGFW_event event;
-        while (RGFW_window_checkEvent(win, &event)) {  // or RGFW_window_checkEvents(); if you only want callbacks
+        while (RGFW_window_checkEvent(win, &event)) {  // or RGFW_pollEvents(); if you only want callbacks
             // you can either check the current event yourself
             if (event.type == RGFW_quit) break;
 
+            i32 mouseX, mouseY;
+            RGFW_window_getMouse(win, &mouseX, &mouseY);
+
             if (event.type == RGFW_mouseButtonPressed && event.button.value == RGFW_mouseLeft) {
-                printf("You clicked at x: %d, y: %d\n", event.mouse.x, event.mouse.y);
+                printf("You clicked at x: %d, y: %d\n", mouseX, mouseY);
             }
 
             // or use the existing functions
-            if (RGFW_isMousePressed(win, RGFW_mouseRight)) {
-                printf("The right mouse button was clicked at x: %d, y: %d\n", event.mouse.x, event.mouse.y);
+            if (RGFW_isMousePressed(RGFW_mouseRight)) {
+                printf("The right mouse button was clicked at x: %d, y: %d\n", mouseX, mouseY);
             }
         }
 

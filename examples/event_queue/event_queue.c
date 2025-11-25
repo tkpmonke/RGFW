@@ -27,13 +27,16 @@ int main(void) {
                     printf("Key released %c\n", event.key.sym);
                     break;
                 case RGFW_mouseButtonPressed:
-                    printf("mouse button pressed\n");
+                    printf("mouse button pressed %i\n", event.button.value);
                     break;
                 case RGFW_mouseButtonReleased:
-                    printf("Mouse Button Released\n");
+                    printf("Mouse Button Released %i\n", event.button.value);
                     break;
-                case RGFW_mousePosChanged:
-                    if (RGFW_isPressed(win, RGFW_controlL))
+				case RGFW_mouseScroll:
+                    printf("Mouse Button scroll %f %f\n", (double)event.scroll.x, (double)event.scroll.y);
+                    break;
+				case RGFW_mousePosChanged:
+                    if (RGFW_window_isKeyPressed(win, RGFW_controlL))
                         printf("Mouse pos changed %i %i\n", event.mouse.x, event.mouse.y);
                     break;
                 case RGFW_windowMoved:
@@ -66,17 +69,17 @@ int main(void) {
                 case RGFW_windowRefresh:
                     printf("Refresh\n");
                     break;
-                case RGFW_drop: {
+                case RGFW_dataDrop: {
                     u32 i;
                     for (i = 0; i < event.drop.count; i++)
                         printf("dropped : %s\n", event.drop.files[i]);
                     break;
                 }
-                case RGFW_drag:
+                case RGFW_dataDrag:
                     printf("Drag : %i %i\n", event.drag.x, event.drag.y);
                     break;
                 case RGFW_scaleUpdated:
-                    printf("Scale Updated : %f %f\n", event.scale.x, event.scale.y);
+                    printf("Scale Updated : %f %f\n", (double)event.scale.x, (double)event.scale.y);
                     break;
                 default:
                     break;

@@ -1,8 +1,9 @@
-.TH "RGFW_mouseButtonEvent" 3 "Sun Aug 10 2025" "RGFW" \" -*- nroff -*-
+.TH "RGFW_mouseButtonEvent" 3 "Tue Nov 25 2025" "RGFW" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-RGFW_mouseButtonEvent
+RGFW_mouseButtonEvent \- event data for any mouse button event (press/release)  
+
 .SH SYNOPSIS
 .br
 .PP
@@ -20,14 +21,12 @@ RGFW_mouseButtonEvent
 .ti -1c
 .RI "\fBu8\fP \fBvalue\fP"
 .br
-.ti -1c
-.RI "double \fBscroll\fP"
-.br
 .in -1c
+.SH "Detailed Description"
+.PP 
+event data for any mouse button event (press/release) 
 .SH "Member Data Documentation"
 .PP 
-.SS "double RGFW_mouseButtonEvent::scroll"
-the raw mouse scroll value 
 .SS "RGFW_eventType RGFW_mouseButtonEvent::type"
 which event has been sent? 
 .SS "\fBu8\fP RGFW_mouseButtonEvent::value"

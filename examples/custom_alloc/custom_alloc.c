@@ -2,6 +2,7 @@
 #include <stdlib.h>
 size_t counter = 0;
 
+void* myAlloc(size_t size, unsigned int line, const char* file);
 void* myAlloc(size_t size, unsigned int line, const char* file) {
     void* ptr = malloc(size);
     printf("%s:%i allocated %u bytes at %p\n",  file, line, (unsigned int)size, ptr);
@@ -10,6 +11,7 @@ void* myAlloc(size_t size, unsigned int line, const char* file) {
     return ptr;
 }
 
+void myFree(void* ptr, unsigned int line, const char* file);
 void myFree(void* ptr, unsigned int line, const char* file) {
     counter--;
     printf("%s:%i freed address %p\n", file, line, ptr);
@@ -26,7 +28,7 @@ void myFree(void* ptr, unsigned int line, const char* file) {
 
 int main(void) {
 	RGFW_setClassName("RGFW Example");
-	RGFW_window *win = RGFW_createWindow("RGFW Example Window", 500, 500, 500, 500, RGFW_windowCenter | RGFW_windowAllowDND | RGFW_windowOpenGL);
+	RGFW_window *win = RGFW_createWindow("RGFW Example Window", 500, 500, 500, 500, RGFW_windowCenter | RGFW_windowAllowDND);
     RGFW_window_setExitKey(win, RGFW_escape);
 
 	while (!RGFW_window_shouldClose(win)) {

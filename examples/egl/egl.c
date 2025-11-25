@@ -21,13 +21,17 @@ void keyfunc(RGFW_window* win, RGFW_key key, u8 keyChar, RGFW_keymod keyMod, RGF
 }
 
 int main(void) {
-    RGFW_window* win = RGFW_createWindow("a window", 0, 0, 800, 600, RGFW_windowEGL | RGFW_windowCenter | RGFW_windowNoResize | RGFW_windowTransparent);
+    RGFW_glHints* hints = RGFW_getGlobalHints_OpenGL();
+    hints->major = 1;
+    hints->minor = 1;
+    RGFW_setGlobalHints_OpenGL(hints);
+
+	RGFW_window* win = RGFW_createWindow("a window", 0, 0, 800, 600, RGFW_windowEGL | RGFW_windowCenter | RGFW_windowNoResize | RGFW_windowTransparent);
     RGFW_window_makeCurrentContext_EGL(win);
     RGFW_setKeyCallback(keyfunc); // you can use callbacks like this if you want
     RGFW_window_setExitKey(win, RGFW_escape);
 
     while (RGFW_window_shouldClose(win) == RGFW_FALSE) {
-        RGFW_event event;
         RGFW_pollEvents();
 
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);

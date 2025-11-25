@@ -1,6 +1,7 @@
 #undef _WIN32_WINNT
 #include <stdio.h>
 
+#define RGFW_DEBUG
 #define GL_SILENCE_DEPRECATION
 #define RGFW_OPENGL
 #define RGFW_IMPLEMENTATION
@@ -247,11 +248,23 @@ static int text_height(mu_Font font) {
 	return r_get_text_height();
 }
 
+static void update_viewport(int width, int height) {
+  GLsizei vw = (GLsizei)((float)width * pixelRatio);
+  GLsizei vh = (GLsizei)((float)height * pixelRatio);
+  glViewport(0, 0, vw, vh);
+  glScissor(0, 0, vw, vh);
+}
 
 int main(int argc, char **argv) {
   RGFW_UNUSED(argc); RGFW_UNUSED(argv);
   /* init RGFW window */
-  RGFW_window* window = RGFW_createWindow("", 0, 0, width, height, RGFW_windowCenter | RGFW_windowScaleToMonitor | RGFW_windowOpenGL);
+  RGFW_window* window = RGFW_createWindow("", 0, 0, width, height, RGFW_windowCenter |  RGFW_windowOpenGL);
+
+  RGFW_monitor mon = RGFW_window_getMonitor(window);
+  width = window->w;
+  height = window->h;
+  pixelRatio = mon.pixelRatio;
+
   r_init();
   RGFW_window_setExitKey(window, RGFW_escape);
 
@@ -261,6 +274,7 @@ int main(int argc, char **argv) {
   ctx->text_width = text_width;
   ctx->text_height = text_height;
 
+  update_viewport(width, height);
   /* main loop */
   while (RGFW_window_shouldClose(window) == RGFW_FALSE) {
     /* handle RGFW events */
@@ -272,12 +286,22 @@ int main(int argc, char **argv) {
         case RGFW_quit: break;
         case RGFW_mousePosChanged: mu_input_mousemove(ctx, event.mouse.x,  event.mouse.y); break;
 
-        case RGFW_mouseButtonPressed:
-		  mu_input_scroll(ctx, 0, event.button.scroll * -30);
-		case RGFW_mouseButtonReleased: {
+		case RGFW_mouseScroll:
+			mu_input_scroll(ctx, event.scroll.x, event.scroll.y);
+			break;
+        case RGFW_mouseButtonPressed: {
+		  i32 x, y;
+		  RGFW_window_getMouse(window, &x, &y);
+
           int b = button_map[event.button.value & 0xff];
-          if (b && event.type == RGFW_mouseButtonPressed) { mu_input_mousedown(ctx, event.mouse.x,  event.mouse.y , b); }
-          if (b && event.type == RGFW_mouseButtonReleased) { mu_input_mouseup(ctx, event.mouse.x,  event.mouse.y, b);   }
+		  if (b) mu_input_mousedown(ctx, x, y, b);
+		  break;
+	   }
+	   case RGFW_mouseButtonReleased: {
+		  i32 x, y;
+		  RGFW_window_getMouse(window, &x, &y);
+          int b = button_map[event.button.value & 0xff];
+          if (b) { mu_input_mouseup(ctx, x, y, b);   }
           break;
         }
 
@@ -295,6 +319,7 @@ int main(int argc, char **argv) {
 		case RGFW_windowResized:
 		  width = window->w;
 		  height = window->h;
+      update_viewport(width, height);
 		  break;
 	  }
     }
